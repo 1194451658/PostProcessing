@@ -150,33 +150,64 @@ namespace UnityEngine.Rendering.PostProcessing
             var sheet = context.propertySheets.Get(context.resources.shaders.bloom);
 
             // Apply auto exposure adjustment in the prefiltering pass
+            // AutoExposureTex
+            // 被传入到Shader
             sheet.properties.SetTexture(ShaderIDs.AutoExposureTex, context.autoExposureTexture);
 
             // Negative anamorphic ratio values distort vertically - positive is horizontal
+
+            //
+            // 限制anamorphicRatio在 [-1, 1]之间
+            // -1, 变的很宽
+            // 1, 变的很高
             float ratio = Mathf.Clamp(settings.anamorphicRatio, -1, 1);
+            // ratio<0时候，只有rw有效, rh为0
+            // ratio>0时候，rw为0，只有rh有效
             float rw = ratio < 0 ? -ratio : 0f;
             float rh = ratio > 0 ?  ratio : 0f;
 
             // Do bloom on a half-res buffer, full-res doesn't bring much and kills performances on
             // fillrate limited platforms
+
+            // 如果rw和rh，是0
+            // 则刚好tw, th是屏幕一半
             int tw = Mathf.FloorToInt(context.screenWidth / (2f - rw));
             int th = Mathf.FloorToInt(context.screenHeight / (2f - rh));
-            bool singlePassDoubleWide = (context.stereoActive && (context.stereoRenderingMode == PostProcessRenderContext.StereoRenderingMode.SinglePass) && (context.camera.stereoTargetEye == StereoTargetEyeMask.Both));
+            bool singlePassDoubleWide = (
+                context.stereoActive && 
+                (context.stereoRenderingMode == PostProcessRenderContext.StereoRenderingMode.SinglePass) &&
+                (context.camera.stereoTargetEye == StereoTargetEyeMask.Both)
+            );
             int tw_stereo = singlePassDoubleWide ? tw * 2 : tw; 
 
             // Determine the iteration count
+            // 获取最大的宽、高
             int s = Mathf.Max(tw, th);
+            // 2的几次方是s
+            // diffusion次数>10的时候，才会影响次数
+            // Q: 为什么要缩小到那么小？
+            // Q: 为什么使用缩小功能？
             float logs = Mathf.Log(s, 2f) + Mathf.Min(settings.diffusion.value, 10f) - 10f;
             int logs_i = Mathf.FloorToInt(logs); 
             int iterations = Mathf.Clamp(logs_i, 1, k_MaxPyramidSize);
+
+            // Q: 这个变量是？
+            // sampleScale: 整数化之后的，精度损失别？
+            // 被传入到Shader
             float sampleScale = 0.5f + logs - logs_i;
             sheet.properties.SetFloat(ShaderIDs.SampleScale, sampleScale);
 
             // Prefiltering parameters 
+            // threshold和softKnee关系
             float lthresh = Mathf.GammaToLinearSpace(settings.threshold.value);
             float knee = lthresh * settings.softKnee.value + 1e-5f;
+
+            // threshold、softKnee的，好几个关系
+            // 被传入到了Shader
             var threshold = new Vector4(lthresh, lthresh - knee, knee * 2f, 0.25f / knee);
             sheet.properties.SetVector(ShaderIDs.Threshold, threshold);
+
+            // clamp被传入Shader
             float lclamp = Mathf.GammaToLinearSpace(settings.clamp.value);
             sheet.properties.SetVector(ShaderIDs.Params, new Vector4(lclamp, 0f, 0f, 0f));
 
