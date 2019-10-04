@@ -16,6 +16,7 @@ namespace UnityEngine.Rendering.PostProcessing
         // -----------------------------------------------------------------------------------------
         // The following should be filled by the render pipeline
 
+        // 摄像机
         Camera m_Camera;
 
         /// <summary>
@@ -110,6 +111,15 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <summary>
         /// The source target for this pass (can't be the same as <see cref="destination"/>).
         /// </summary>
+
+        // RenderTargetIdentifier:
+        // Identifies a RenderTexture for a CommandBuffer.
+        // Render textures can be identified in a number of ways,
+        // for example a RenderTexture object,
+        // or one of built-in render textures (BuiltinRenderTextureType),
+        // or a temporary render texture with a name (that was created using CommandBuffer.GetTemporaryRT).
+        // This struct serves as a way to identify them,
+        // and has implcit conversion operators so that in most cases you can save some typing.
         public RenderTargetIdentifier source { get; set; }
 
         /// <summary>
@@ -128,6 +138,8 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <summary>
         /// Should we flip the last pass?
         /// </summary>
+
+        // Q: 什么叫做flip ?
         public bool flip { get; set; }
 
         // -----------------------------------------------------------------------------------------
@@ -378,9 +390,15 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="filter">The texture filtering mode</param>
         /// <param name="widthOverride">Override the display width; use <c>0</c> to disable the override</param>
         /// <param name="heightOverride">Override the display height; use <c>0</c> to disable the override</param>
-        public void GetScreenSpaceTemporaryRT(CommandBuffer cmd, int nameID,
-                                            int depthBufferBits = 0, RenderTextureFormat colorFormat = RenderTextureFormat.Default, RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default,
-                                            FilterMode filter = FilterMode.Bilinear, int widthOverride = 0, int heightOverride = 0)
+        public void GetScreenSpaceTemporaryRT(
+            CommandBuffer cmd,
+            int nameID,
+            int depthBufferBits = 0,
+            RenderTextureFormat colorFormat = RenderTextureFormat.Default,
+            RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default,
+            FilterMode filter = FilterMode.Bilinear,
+            int widthOverride = 0,
+            int heightOverride = 0)
         {
 #if UNITY_2017_2_OR_NEWER
             var desc = GetDescriptor(depthBufferBits, colorFormat, readWrite);
@@ -423,8 +441,10 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="widthOverride">Override the display width; use <c>0</c> to disable the override</param>
         /// <param name="heightOverride">Override the display height; use <c>0</c> to disable the override</param>
         /// <returns>A temporary render target</returns>
-        public RenderTexture GetScreenSpaceTemporaryRT(int depthBufferBits = 0, RenderTextureFormat colorFormat = RenderTextureFormat.Default,
-                                                        RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default, int widthOverride = 0, int heightOverride = 0)
+        public RenderTexture GetScreenSpaceTemporaryRT(
+            int depthBufferBits = 0,
+            RenderTextureFormat colorFormat = RenderTextureFormat.Default,
+                            RenderTextureReadWrite readWrite = RenderTextureReadWrite.Default, int widthOverride = 0, int heightOverride = 0)
         {
 #if UNITY_2017_2_OR_NEWER
             var desc = GetDescriptor(depthBufferBits, colorFormat, readWrite);

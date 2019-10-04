@@ -113,10 +113,16 @@ namespace UnityEngine.Rendering.PostProcessing
 
         // [down,up]
         Level[] m_Pyramid;
+
+        // Q: 64k屏幕，什么意思？！
+        // 还是16K？
+        // 16K是，水平大概能有16000(15360)个像素
+        // 还真是想支持64K屏幕!
         const int k_MaxPyramidSize = 16; // Just to make sure we handle 64k screens... Future-proof!
 
         struct Level
         {
+            // 保存的是，Shader变量的id
             internal int down;
             internal int up;
         }
@@ -125,6 +131,7 @@ namespace UnityEngine.Rendering.PostProcessing
         {
             m_Pyramid = new Level[k_MaxPyramidSize];
 
+            // 获取Shader变量的id
             for (int i = 0; i < k_MaxPyramidSize; i++)
             {
                 m_Pyramid[i] = new Level
@@ -181,8 +188,7 @@ namespace UnityEngine.Rendering.PostProcessing
             {
                 int mipDown = m_Pyramid[i].down;
                 int mipUp = m_Pyramid[i].up;
-                int pass = i == 0
-                    ? (int)Pass.Prefilter13 + qualityOffset
+                int pass = i == 0 ? (int)Pass.Prefilter13 + qualityOffset
                     : (int)Pass.Downsample13 + qualityOffset;
 
                 context.GetScreenSpaceTemporaryRT(cmd, mipDown, 0, context.sourceFormat, RenderTextureReadWrite.Default, FilterMode.Bilinear, tw_stereo, th);
