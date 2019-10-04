@@ -104,8 +104,11 @@ namespace UnityEngine.Rendering.PostProcessing
             Prefilter4,
             Downsample13,
             Downsample4,
+
+            // 2个Up Sample算法
             UpsampleTent,
             UpsampleBox,
+
             DebugOverlayThreshold,
             DebugOverlayTent,
             DebugOverlayBox
@@ -219,11 +222,38 @@ namespace UnityEngine.Rendering.PostProcessing
             {
                 int mipDown = m_Pyramid[i].down;
                 int mipUp = m_Pyramid[i].up;
+
+                // 使用Prefilter13、Downsample13
+                // 使用了qualityOffset
+                // 则会使用Prefilter4、Downsample4
                 int pass = i == 0 ? (int)Pass.Prefilter13 + qualityOffset
                     : (int)Pass.Downsample13 + qualityOffset;
 
-                context.GetScreenSpaceTemporaryRT(cmd, mipDown, 0, context.sourceFormat, RenderTextureReadWrite.Default, FilterMode.Bilinear, tw_stereo, th);
-                context.GetScreenSpaceTemporaryRT(cmd, mipUp, 0, context.sourceFormat, RenderTextureReadWrite.Default, FilterMode.Bilinear, tw_stereo, th);
+                context.GetScreenSpaceTemporaryRT(
+                    cmd,                                // CommandBuffer
+                    mipDown,                            // nameID
+                    0,                                  // depthBufferBits
+                    context.sourceFormat,               // colorFormat
+                    RenderTextureReadWrite.Default,     // readWrite
+                    FilterMode.Bilinear,                // filter
+
+                    // 申请了更小的Texture
+                    tw_stereo,                          // widthOverride
+                    th                                  // heightOverride
+                );
+
+                context.GetScreenSpaceTemporaryRT(
+                    cmd,
+                    mipUp,
+                    0,
+                    context.sourceFormat,
+                    RenderTextureReadWrite.Default,
+                    FilterMode.Bilinear,
+                    tw_stereo,
+                    th
+                );
+
+                // 这里，只修改了mipDown
                 cmd.BlitFullscreenTriangle(lastDown, mipDown, sheet, pass);
 
                 lastDown = mipDown;
@@ -233,12 +263,18 @@ namespace UnityEngine.Rendering.PostProcessing
             }
 
             // Upsample
+
+            // 从最后一个down开始
             int lastUp = m_Pyramid[iterations - 1].down;
             for (int i = iterations - 2; i >= 0; i--)
             {
                 int mipDown = m_Pyramid[i].down;
                 int mipUp = m_Pyramid[i].up;
+
+                // 传入Shader对应的mipDown
                 cmd.SetGlobalTexture(ShaderIDs.BloomTex, mipDown);
+
+                // 2个UpSample算法
                 cmd.BlitFullscreenTriangle(lastUp, mipUp, sheet, (int)Pass.UpsampleTent + qualityOffset);
                 lastUp = mipUp;
             }

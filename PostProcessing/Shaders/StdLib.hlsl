@@ -249,6 +249,8 @@ float GradientNoise(float2 uv)
 }
 
 // Vertex manipulation
+// 根据顶点坐标，生成uv
+// Q: vertex的大小是？-1，到+1?
 float2 TransformTriangleVertexToUV(float2 vertex)
 {
     float2 uv = (vertex + 1.0) * 0.5;
@@ -282,13 +284,18 @@ float _DepthSlice;
 VaryingsDefault VertDefault(AttributesDefault v)
 {
     VaryingsDefault o;
+    // 位置
+    // 不做任何变化
     o.vertex = float4(v.vertex.xy, 0.0, 1.0);
+    // 根据顶点位置
+    // 生成uv坐标
     o.texcoord = TransformTriangleVertexToUV(v.vertex.xy);
 
 #if UNITY_UV_STARTS_AT_TOP
     o.texcoord = o.texcoord * float2(1.0, -1.0) + float2(0.0, 1.0);
 #endif
 
+    // Q: VR时候的变化？
     o.texcoordStereo = TransformStereoScreenSpaceTex(o.texcoord, 1.0);
 
     return o;

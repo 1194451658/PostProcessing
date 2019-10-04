@@ -7,6 +7,8 @@ Shader "Hidden/PostProcessing/Bloom"
         #include "../Sampling.hlsl"
 
         TEXTURE2D_SAMPLER2D(_MainTex, sampler_MainTex);
+
+        // 在Combine的时候使用
         TEXTURE2D_SAMPLER2D(_BloomTex, sampler_BloomTex);
         TEXTURE2D_SAMPLER2D(_AutoExposureTex, sampler_AutoExposureTex);
 
@@ -19,24 +21,37 @@ Shader "Hidden/PostProcessing/Bloom"
         // ----------------------------------------------------------------------------------------
         // Prefilter
 
+        // 应用_AutoExposureTex
+        // 应用QuadraticThreshold
         half4 Prefilter(half4 color, float2 uv)
         {
             half autoExposure = SAMPLE_TEXTURE2D(_AutoExposureTex, sampler_AutoExposureTex, uv).r;
             color *= autoExposure;
             color = min(_Params.x, color); // clamp to max
+
+            // 在Color.hlsl中定义
             color = QuadraticThreshold(color, _Threshold.x, _Threshold.yzw);
             return color;
         }
 
+        // StdLib.hlsl中定义
         half4 FragPrefilter13(VaryingsDefault i) : SV_Target
         {
-            half4 color = DownsampleBox13Tap(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy);
+            half4 color = DownsampleBox13Tap(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy
+            );
             return Prefilter(SafeHDR(color), i.texcoord);
         }
 
         half4 FragPrefilter4(VaryingsDefault i) : SV_Target
         {
-            half4 color = DownsampleBox4Tap(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy);
+            half4 color = DownsampleBox4Tap(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy
+            );
             return Prefilter(SafeHDR(color), i.texcoord);
         }
 
@@ -45,13 +60,21 @@ Shader "Hidden/PostProcessing/Bloom"
 
         half4 FragDownsample13(VaryingsDefault i) : SV_Target
         {
-            half4 color = DownsampleBox13Tap(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy);
+            half4 color = DownsampleBox13Tap(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy
+            );
             return color;
         }
 
         half4 FragDownsample4(VaryingsDefault i) : SV_Target
         {
-            half4 color = DownsampleBox4Tap(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy);
+            half4 color = DownsampleBox4Tap(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy
+            );
             return color;
         }
 
@@ -66,13 +89,22 @@ Shader "Hidden/PostProcessing/Bloom"
 
         half4 FragUpsampleTent(VaryingsDefault i) : SV_Target
         {
-            half4 bloom = UpsampleTent(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy, _SampleScale);
+            half4 bloom = UpsampleTent(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy,
+                _SampleScale);
             return Combine(bloom, i.texcoordStereo);
         }
 
         half4 FragUpsampleBox(VaryingsDefault i) : SV_Target
         {
-            half4 bloom = UpsampleBox(TEXTURE2D_PARAM(_MainTex, sampler_MainTex), i.texcoord, UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy, _SampleScale);
+            half4 bloom = UpsampleBox(
+                TEXTURE2D_PARAM(_MainTex, sampler_MainTex),
+                i.texcoord,
+                UnityStereoAdjustedTexelSize(_MainTex_TexelSize).xy,
+                _SampleScale
+            );
             return Combine(bloom, i.texcoordStereo);
         }
 
@@ -108,6 +140,7 @@ Shader "Hidden/PostProcessing/Bloom"
         {
             HLSLPROGRAM
 
+                // 在StdLib.hlsl中定义
                 #pragma vertex VertDefault
                 #pragma fragment FragPrefilter13
 

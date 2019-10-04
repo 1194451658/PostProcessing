@@ -400,6 +400,7 @@ namespace UnityEngine.Rendering.PostProcessing
             int widthOverride = 0,
             int heightOverride = 0)
         {
+
 #if UNITY_2017_2_OR_NEWER
             var desc = GetDescriptor(depthBufferBits, colorFormat, readWrite);
             if (widthOverride > 0)
