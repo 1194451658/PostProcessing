@@ -172,7 +172,7 @@ namespace UnityEngine.Rendering.PostProcessing
             float sampleScale = 0.5f + logs - logs_i;
             sheet.properties.SetFloat(ShaderIDs.SampleScale, sampleScale);
 
-            // Prefiltering parameters
+            // Prefiltering parameters 
             float lthresh = Mathf.GammaToLinearSpace(settings.threshold.value);
             float knee = lthresh * settings.softKnee.value + 1e-5f;
             var threshold = new Vector4(lthresh, lthresh - knee, knee * 2f, 0.25f / knee);
