@@ -617,8 +617,11 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="viewport">An optional viewport to consider for the blit</param>
         public static void BlitFullscreenTriangle(this CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier destination, RenderTargetIdentifier depth, PropertySheet propertySheet, int pass, bool clear = false, Rect? viewport = null)
         {
+            // 设置_MainTex
             cmd.SetGlobalTexture(ShaderIDs.MainTex, source);
 
+            // 设置load和store action
+            // Q: load/store action是什么操作？有什么意义？对应着OpenGL的什么操作？
             LoadAction loadAction = viewport == null ? LoadAction.DontCare : LoadAction.Load;
             if (clear)
             {
@@ -630,6 +633,7 @@ namespace UnityEngine.Rendering.PostProcessing
                 cmd.SetRenderTargetWithLoadStoreAction(destination, loadAction, StoreAction.Store, depth, LoadAction.Load, StoreAction.Store);
             }
 
+            // 设置viewport
             if (viewport != null)
                 cmd.SetViewport(viewport.Value);
 
