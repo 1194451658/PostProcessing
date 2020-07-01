@@ -450,8 +450,9 @@ namespace UnityEngine.Rendering.PostProcessing
         {
             // Unused in scriptable render pipelines
             // Only needed for multi-pass stereo right eye
-            if (RuntimeUtilities.scriptableRenderPipelineActive ||
-                (m_Camera.stereoActiveEye != Camera.MonoOrStereoscopicEye.Right))
+            if (RuntimeUtilities.scriptableRenderPipelineActive ||                  // 是否，使用了Scriptable Render Pipeline
+                (m_Camera.stereoActiveEye != Camera.MonoOrStereoscopicEye.Right)    // Q: 只在右眼使用？好像记得是，只需要Pass，就能都渲染出左右眼？
+            )
                 return;
 
             BuildCommandBuffers();
@@ -494,6 +495,8 @@ namespace UnityEngine.Rendering.PostProcessing
         void BuildCommandBuffers()
         {
             var context = m_CurrentContext;
+
+            // 确定HDR时，贴图格式
             var sourceFormat = m_Camera.allowHDR ? RuntimeUtilities.defaultHDRRenderTextureFormat : RenderTextureFormat.Default;
 
             if (!RuntimeUtilities.isFloatingPointFormat(sourceFormat))

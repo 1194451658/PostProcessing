@@ -471,6 +471,9 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="pass">The pass from the material to use</param>
         /// <param name="loadAction">The load action for this blit</param>
         /// <param name="viewport">An optional viewport to consider for the blit</param>
+
+        // 使用了PropertySheet
+        // 可以自己指定LoadAction, StoreAction
         public static void BlitFullscreenTriangle(this CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier destination, PropertySheet propertySheet, int pass, RenderBufferLoadAction loadAction, Rect? viewport = null)
         {
             cmd.SetGlobalTexture(ShaderIDs.MainTex, source);
@@ -502,6 +505,11 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="pass">The pass from the material to use</param>
         /// <param name="clear">Should the destination target be cleared?</param>
         /// <param name="viewport">An optional viewport to consider for the blit</param>
+
+
+        // 使用propertySheet
+        // 没有自己设置LoadAction, StoreAction
+        // 可以控制clear
         public static void BlitFullscreenTriangle(this CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier destination, PropertySheet propertySheet, int pass, bool clear = false, Rect? viewport = null)
         {
             #if UNITY_2018_2_OR_NEWER
@@ -529,6 +537,9 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="material">The material to use for the blit</param>
         /// <param name="pass">The pass from the material to use</param>
         /// <param name="eye">The target eye</param>
+
+        // 使用Material
+        // 使用的内置的Blit
         public static void BlitFullscreenTriangleFromDoubleWide(this CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier destination, Material material, int pass, int eye)
         {
             Vector4 uvScaleOffset = new Vector4(0.5f, 1.0f, 0, 0);
@@ -651,6 +662,8 @@ namespace UnityEngine.Rendering.PostProcessing
         /// <param name="pass">The pass from the material to use</param>
         /// <param name="clear">Should the destination target be cleared?</param>
         /// <param name="viewport">An optional viewport to consider for the blit</param>
+
+        // 使用PropertySheet，并且还控制了clear
         public static void BlitFullscreenTriangle(this CommandBuffer cmd, RenderTargetIdentifier source, RenderTargetIdentifier[] destinations, RenderTargetIdentifier depth, PropertySheet propertySheet, int pass, bool clear = false, Rect? viewport = null)
         {
             cmd.SetGlobalTexture(ShaderIDs.MainTex, source);
@@ -834,9 +847,14 @@ namespace UnityEngine.Rendering.PostProcessing
                 RenderTextureFormat format = RenderTextureFormat.RGB111110Float;
 #if UNITY_EDITOR
                 var target = EditorUserBuildSettings.activeBuildTarget;
-                if (target != BuildTarget.Android && target != BuildTarget.iOS && target != BuildTarget.tvOS && target != BuildTarget.Switch)
+                if (target != BuildTarget.Android &&
+                    target != BuildTarget.iOS &&
+                    target != BuildTarget.tvOS &&
+                    target != BuildTarget.Switch)
+                    // 不是，上述平台，也使用默认
                     return RenderTextureFormat.DefaultHDR;
 #endif // UNITY_EDITOR
+                // 如果不支持，也使用默认
                 if (format.IsSupported())
                     return format;
 #endif // UNITY_ANDROID || UNITY_IPHONE || UNITY_TVOS || UNITY_SWITCH || UNITY_EDITOR
